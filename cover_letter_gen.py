@@ -1,4 +1,4 @@
-from fpdf import FPDF
+from pdftemplate import CoverLetterPDF
 import argparse
 import os
 
@@ -53,28 +53,13 @@ def content_builder(inputs_hash, algorithm_placeholder_variable=None):
         address_block = address_parser(inputs_hash)
         output_text = "\n\n".join([address_block, output_text])
         return output_text
-    
-class CustomPDF(FPDF):
- 
-    def header(self):
-        self.set_y(.5)
-        self.set_font("Times", size=18, style="B")
-        self.cell(w=6.5, h=.25, txt='James Huessy', ln=1, align="C")
-        self.set_font("Times", size=12)
-        self.cell(w=6.5, h=.25, txt='Jamaica Plain, MA | jameshuessy@gmail.com | 802-735-5650 | GitHub: TheHuessy', ln=1, align="C")
-        self.cell(w=6.5, h=.5, txt='', ln=1, align="L")
-    
-    def footer(self):
-        self.set_y(-.5) 
-        self.set_font('Times', 'I', 9)
-        self.multi_cell(w=6.5, h=.15, txt='This cover letter was generated in Python by a custom script I wrote. For the source code and other projects, visit https://github.com/TheHuessy/', align="C")
 
 def build_letter(contact_name, position_name, job_listing_source, company_name, company_add_1, company_add_2, company_csz):
     inputs = inputs_sorter(contact_name, position_name, job_listing_source, company_name, company_add_1, company_add_2, company_csz)
     body = content_builder(inputs)
     
     ## PDF setup
-    pdf = CustomPDF(orientation='P', unit='in',format='letter')
+    pdf = CoverLetterPDF(orientation='P', unit='in',format='letter')
     
     pdf.add_font(family='Garamond', fname=r"C:/Users/Jhuessy/AppData/Local/Microsoft/Windows/Fonts/GARA.TTF", uni=True)
     
