@@ -4,7 +4,7 @@ import os
 
 def inputs_sorter(contact_name, position_name, job_listing_source, company_name, company_add_1, company_add_2, company_csz, company_name_informal=None):
     #Not adding company_name_informal because it's only used once and we could just sub in the contact name and not go through the headache of coding the ifs
-    if contact_name == "":
+    if contact_name == "" or contact_name == None:
         contact_name = "Hiring Committee"
         
     if company_add_2 == "":
@@ -75,10 +75,10 @@ def build_letter(contact_name, position_name, job_listing_source, company_name, 
     
     ## PDF setup
     pdf = CustomPDF(orientation='P', unit='in',format='letter')
-    #print(os.environ['SYSTEM_TTFONTS'])
-    #print(os.path.exists("C:/Users/Jhuessy/AppData/Local/Microsoft/Windows/Fonts/GARA.TTF"))
+    
     pdf.add_font(family='Garamond', fname=r"C:/Users/Jhuessy/AppData/Local/Microsoft/Windows/Fonts/GARA.TTF", uni=True)
-    #pdf.add_font('garamond', '', 'GARA.ttf')
+    
+
     pdf.set_font('Garamond', size=12)
     pdf.set_margins(1, .5, 1)
     pdf.add_page()
@@ -92,33 +92,44 @@ def build_letter(contact_name, position_name, job_listing_source, company_name, 
     pdf.cell(w=6.5, h=.25, txt='Sincerely,', ln=1, align="L")
     pdf.cell(w=6.5, h=.25, txt='James Huessy', ln=1, align="L")
 
-    out_name = "./Cover Letters/{}_{}_James_Huessy.pdf".format(company_name, position_name)
-    pdf.output(out_name)
+    out_name = "{}../../Jobs/Cover Letters/{}_{}_James_Huessy.pdf".format(os.path.dirname(__file__), company_name.replace(" ", "_"), position_name.replace(" ", "_"))
+    try:
+        pdf.output(out_name)
+    except Exception as err:
+        print("Could not build cover letter!\nError: {}".format(err))
+    else:
+        print("Cover letter written!")
 
 
 parser = argparse.ArgumentParser(description='Enter all the data and we will make you a cover letter!')
 
-parser.add_argument('Contact Name', metavar='contact_name', type=str, nargs='?',
+parser.add_argument('--contact_name', type=str, nargs='?',
                     help='The contact name. If not known, enter a blank string like ""')
 
-parser.add_argument('Position Name', metavar='position_name', type=str, nargs='?',
+parser.add_argument('--position_name', type=str, nargs='?',
                     help='The position title')
 
-parser.add_argument('Job Listing Source', metavar='job_listing_source', type=str, nargs='?',
+parser.add_argument('--job_listing_source', type=str, nargs='?',
                     help='Where you found out about the job posting')
 
-parser.add_argument('Company Name', metavar='company_name', type=str, nargs='?',
+parser.add_argument('--company_name', type=str, nargs='?',
                     help='The name of the company')
 
-parser.add_argument('Company Address Line 1', metavar='company_add_1', type=str, nargs='?',
+parser.add_argument('--company_add_1', type=str, nargs='?',
                     help='The address of the company, line 1')
 
-parser.add_argument('Company Address Line 2', metavar='company_add_2', type=str, nargs='?',
-                    help='The address of the company, line 2.\nIf not needed, just add ""')
+parser.add_argument('--company_add_2', type=str, default="", nargs='?',
+                    help='The address of the company, line 2.\rIf not needed, just add ""')
 
-parser.add_argument('Company City, State Zipcode', metavar='company_csz', type=str, nargs='?',
-                    help='Company City, State Zipcode \nJust like that, with the comma')
+parser.add_argument('--company_csz', type=str, nargs='?',
+                    help='Company City, State Zipcode \rJust like that, with the comma')
 args = vars(parser.parse_args())
 
-build_letter(args['Contact Name'], args['Position Name'], args['Job Listing Source'], args['Company Name'], args['Company Address Line 1'], args['Company Address Line 2'], args['Company City, State Zipcode'])
+build_letter(args['contact_name'],
+    args['position_name'],
+    args['job_listing_source'],
+    args['company_name'],
+    args['company_add_1'],
+    args['company_add_2'],
+    args['company_csz'])
 
