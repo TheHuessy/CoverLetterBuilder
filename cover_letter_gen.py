@@ -1,6 +1,7 @@
 from pdftemplate import CoverLetterPDF
 import argparse
 import os
+import sys
 
 def inputs_sorter(contact_name, position_name, job_listing_source, company_name, company_add_1, company_add_2, company_csz, company_name_informal=None):
     #Not adding company_name_informal because it's only used once and we could just sub in the contact name and not go through the headache of coding the ifs
@@ -60,8 +61,8 @@ def build_letter(contact_name, position_name, job_listing_source, company_name, 
     
     ## PDF setup
     pdf = CoverLetterPDF(orientation='P', unit='in',format='letter')
-    
-    pdf.add_font(family='Garamond', fname=r"C:/Users/Jhuessy/AppData/Local/Microsoft/Windows/Fonts/GARA.TTF", uni=True)
+    pdf.add_font(family='Garamond', fname=r"fonts/gara.ttf", uni=True)
+
     
 
     pdf.set_font('Garamond', size=12)
@@ -77,7 +78,7 @@ def build_letter(contact_name, position_name, job_listing_source, company_name, 
     pdf.cell(w=6.5, h=.25, txt='Sincerely,', ln=1, align="L")
     pdf.cell(w=6.5, h=.25, txt='James Huessy', ln=1, align="L")
 
-    out_name = "{}../../Jobs/Cover Letters/{}_{}_James_Huessy.pdf".format(os.path.dirname(__file__), company_name.replace(" ", "_"), position_name.replace(" ", "_"))
+    out_name = "{}generated_cover_letters/{}_{}_James_Huessy.pdf".format(os.path.dirname(__file__), company_name.replace(" ", "_"), position_name.replace(" ", "_"))
     try:
         pdf.output(out_name)
     except Exception as err:
