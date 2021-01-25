@@ -78,7 +78,11 @@ def build_letter(contact_name, position_name, job_listing_source, company_name, 
     pdf.cell(w=6.5, h=.25, txt='Sincerely,', ln=1, align="L")
     pdf.cell(w=6.5, h=.25, txt='James Huessy', ln=1, align="L")
 
-    out_name = "{}generated_cover_letters/{}_{}_James_Huessy.pdf".format(os.path.dirname(__file__), company_name.replace(" ", "_"), position_name.replace(" ", "_"))
+    ## Check if the output folder exists, create it if it doesn't
+    if not os.path.isdir("generated_cover_letters"):
+        os.mkdir("generated_cover_letters")
+
+    out_name = "generated_cover_letters/{}_{}_James_Huessy.pdf".format(company_name.replace(" ", "_"), position_name.replace(" ", "_"))
     try:
         pdf.output(out_name)
     except Exception as err:
