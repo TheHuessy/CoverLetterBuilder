@@ -5,9 +5,11 @@ import sys
 import yaml
 
 def inputs_sorter(config):
-    #Not adding company_name_informal because it's only used once and we could just sub in the contact name and not go through the headache of coding the ifs
     if config['contact_name'] == "" or config['contact_name'] == None:
-        config['contact_name'] = "Hiring Committee"
+        if config['to_recruiter']:
+            config['contact_name'] = "Recruiter"
+        else:
+            config['contact_name'] = "Hiring Committee"
     if config['company_add_2'] == "":
         del config['company_add_2']
     return(config)
@@ -24,21 +26,33 @@ def address_parser(inputs_hash):
                                  inputs_hash['company_csz']])
     return address_block
 
-def content_builder(inputs_hash, algorithm_placeholder_variable=None):
-    if algorithm_placeholder_variable:
-        print("Carry out harder bit")
+def read_text_file(path):
+    with open(path, 'r') as file:
+        output = file.read()
+    return(output)
+
+def content_builder(inputs_hash):
+    text_body = read_text_file("./cover_letter_copy/stock.txt")
+    body_text = text_body.format(
+            inputs_hash['contact_name'],
+            inputs_hash['position_name'],
+            inputs_hash['job_listing_source'],
+            )
+    if inputs_hash['to_recruiter'] == 'True':
+        conc_text = read_text_file("./cover_letter_copy/conclusion_recruiter.txt").format(
+                inputs_hash['position_name']
+                )
+        output_text = "\n".join([body_text, conc_text])
     else:
-        with open("./cover_letter_copy/stock.txt") as stock:
-            text_body = stock.read()
-        output_text = text_body.format(inputs_hash['contact_name'], 
-                                       inputs_hash['position_name'],
-                                       inputs_hash['job_listing_source'],
-                                       inputs_hash['company_name'],
-                                       inputs_hash['position_name']
-                                      )
+        conc_text = read_text_file("./cover_letter_copy/conclusion_company.txt").format(
+                inputs_hash['company_name'],
+                inputs_hash['position_name']
+                )
         address_block = address_parser(inputs_hash)
-        output_text = "\n\n".join([address_block, output_text])
-        return output_text
+        full_letter = "\n".join([body_text, conc_text])
+        output_text = "\n\n".join([address_block, full_letter])
+
+    return(output_text)
 
 def build_letter(config):
     inputs = inputs_sorter(config)
@@ -109,13 +123,16 @@ parser.add_argument('--company_add_1', type=str, nargs='?',
                     help='The address of the company, line 1')
 
 parser.add_argument('--company_add_2', type=str, default="", nargs='?',
-                    help='The address of the company, line 2.\rIf not needed, just add ""')
+                    help='The address of the company, line 2.\rIf not needed, you can exclude it')
 
 parser.add_argument('--company_csz', type=str, nargs='?',
                     help='Company City, State Zipcode \rJust like that, with the comma')
 
+parser.add_argument('--to_recruiter', type=str, default=False, nargs='?',
+                    help='Whether or not this letter is intended for a recruiter. Defaults to False, change to True otherwise')
+
+
 
 args = args_wrangle(parser)
-
 build_letter(args)
 
