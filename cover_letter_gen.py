@@ -88,10 +88,10 @@ def args_wrangle(parser):
 
 
 
-parser = argparse.ArgumentParser(description='Enter all the data and we will make you a cover letter!')
+parser = argparse.ArgumentParser(description='Either provide the path to a yaml config file based on the neighboring config_template.yaml file or enter the neccessary info via command line args. You will find your finished cover letter in the generated_cover_letters folder in this repo.')
 
 parser.add_argument('--config', type=str, nargs='?', default=False,
-                    help='The relative path to the config file')
+                    help='The relative path to the config file. If config is used, other arguments are ignored.')
 
 parser.add_argument('--contact_name', type=str, nargs='?',
                     help='The contact name. If not known, enter a blank string like ""')
