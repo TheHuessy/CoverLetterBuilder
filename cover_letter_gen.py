@@ -43,7 +43,7 @@ def content_builder(inputs_hash, algorithm_placeholder_variable=None):
     if algorithm_placeholder_variable:
         print("Carry out harder bit")
     else:
-        with open("./Cover Letter Copy/stock.txt") as stock:
+        with open("./cover_letter_copy/stock.txt") as stock:
             text_body = stock.read()
         output_text = text_body.format(inputs_hash['contact_name'], 
                                        inputs_hash['position_name'],
