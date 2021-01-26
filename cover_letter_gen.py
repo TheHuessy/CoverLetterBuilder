@@ -2,33 +2,18 @@ from pdftemplate import CoverLetterPDF
 import argparse
 import os
 import sys
+import yaml
 
-def inputs_sorter(contact_name, position_name, job_listing_source, company_name, company_add_1, company_add_2, company_csz, company_name_informal=None):
+def inputs_sorter(config):
     #Not adding company_name_informal because it's only used once and we could just sub in the contact name and not go through the headache of coding the ifs
-    if contact_name == "" or contact_name == None:
-        contact_name = "Hiring Committee"
-        
-    if company_add_2 == "":
-        inputs_hash = {"contact_name": contact_name,
-                       "position_name": position_name,
-                       "job_listing_source": job_listing_source,
-                       "company_name": company_name,
-                       "company_add_1": company_add_1,                   
-                       "company_csz": company_csz
-                      }
-    else:
-        inputs_hash = {"contact_name": contact_name,
-                       "position_name": position_name,
-                       "job_listing_source": job_listing_source,
-                       "company_name": company_name,
-                       "company_add_1": company_add_1,
-                       "company_add_2": company_add_2,
-                       "company_csz": company_csz
-                      }
-    return inputs_hash
+    if config['contact_name'] == "" or config['contact_name'] == None:
+        config['contact_name'] = "Hiring Committee"
+    if config['company_add_2'] == "":
+        del config['company_add_2']
+    return(config)
 
 def address_parser(inputs_hash):
-    if "company_add_2" in inputs_hash:
+    if "company_add_2" in inputs_hash.keys():
         address_block = "\n".join([inputs_hash['company_name'],
                                  inputs_hash['company_add_1'],
                                  inputs_hash['company_add_2'],
@@ -55,15 +40,13 @@ def content_builder(inputs_hash, algorithm_placeholder_variable=None):
         output_text = "\n\n".join([address_block, output_text])
         return output_text
 
-def build_letter(contact_name, position_name, job_listing_source, company_name, company_add_1, company_add_2, company_csz):
-    inputs = inputs_sorter(contact_name, position_name, job_listing_source, company_name, company_add_1, company_add_2, company_csz)
+def build_letter(config):
+    inputs = inputs_sorter(config)
     body = content_builder(inputs)
     
     ## PDF setup
     pdf = CoverLetterPDF(orientation='P', unit='in',format='letter')
     pdf.add_font(family='Garamond', fname=r"fonts/gara.ttf", uni=True)
-
-    
 
     pdf.set_font('Garamond', size=12)
     pdf.set_margins(1, .5, 1)
@@ -71,7 +54,6 @@ def build_letter(contact_name, position_name, job_listing_source, company_name, 
 
     ## Whole Text Body From Inputs
     pdf.multi_cell(w=6.5,h=.2,txt=body,align="L")
-
 
     ## EXIT SALUTATION ##
     pdf.cell(w=6.5, h=.25, txt='', ln=1, align="L")
@@ -82,7 +64,10 @@ def build_letter(contact_name, position_name, job_listing_source, company_name, 
     if not os.path.isdir("generated_cover_letters"):
         os.mkdir("generated_cover_letters")
 
-    out_name = "generated_cover_letters/{}_{}_James_Huessy.pdf".format(company_name.replace(" ", "_"), position_name.replace(" ", "_"))
+    out_name = "generated_cover_letters/{}_{}_James_Huessy_Cover_Letter.pdf".format(
+            inputs['company_name'].replace(" ", "_"),
+            inputs['position_name'].replace(" ", "_")
+            )
     try:
         pdf.output(out_name)
     except Exception as err:
@@ -90,8 +75,23 @@ def build_letter(contact_name, position_name, job_listing_source, company_name, 
     else:
         print("Cover letter written!")
 
+def args_wrangle(parser):
+    input_args = vars(parser.parse_args())
+    if input_args['config']:
+        with open(input_args['config'], "r") as config_file:
+            output_args = yaml.load(config_file.read(), Loader=yaml.BaseLoader)
+
+    else:
+        output_args = input_args
+
+    return(output_args)
+
+
 
 parser = argparse.ArgumentParser(description='Enter all the data and we will make you a cover letter!')
+
+parser.add_argument('--config', type=str, nargs='?', default=False,
+                    help='The relative path to the config file')
 
 parser.add_argument('--contact_name', type=str, nargs='?',
                     help='The contact name. If not known, enter a blank string like ""')
@@ -113,13 +113,9 @@ parser.add_argument('--company_add_2', type=str, default="", nargs='?',
 
 parser.add_argument('--company_csz', type=str, nargs='?',
                     help='Company City, State Zipcode \rJust like that, with the comma')
-args = vars(parser.parse_args())
 
-build_letter(args['contact_name'],
-    args['position_name'],
-    args['job_listing_source'],
-    args['company_name'],
-    args['company_add_1'],
-    args['company_add_2'],
-    args['company_csz'])
+
+args = args_wrangle(parser)
+
+build_letter(args)
 
